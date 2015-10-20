@@ -130,11 +130,6 @@ module AMQP
       end
 
       def logger=(logger)
-        methods = AMQP::Logging::REQUIRED_METHODS
-        unless methods.all? { |method| logger.respond_to?(method) }
-          raise AMQP::Logging::IncompatibleLoggerError.new(methods)
-        end
-
         @logger = logger
       end
 
@@ -668,6 +663,7 @@ module AMQP
     def receive_data(chunk)
       @chunk_buffer << chunk
       while frame = get_next_frame
+        logger.info("Receiving frame: #{frame.inspect}")
         self.receive_frame(AMQP::Framing::String::Frame.decode(frame))
       end
     end
@@ -737,6 +733,7 @@ module AMQP
       if closed?
         raise ConnectionClosedError.new(frame)
       else
+        logger.info("Sending frame: #{frame.inspect}")
         self.send_raw(frame.encode)
       end
     end

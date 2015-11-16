@@ -930,9 +930,15 @@ module AMQP
         begin
           receive_frameset(@frames[frame.channel])
         ensure
-          # for channel.close, frame.channel will be nil. MK.
-          clear_frames_on(frame.channel) if @frames[frame.channel]
+          begin
+            clear_frames_on(frame.channel) if @frames[frame.channel] # for channel.close, frame.channel will be nil. MK.
+          rescue Exception => ex
+            logger.error("Error clearing frameset.\n#{ex.inspect}\n#{ex.backtrace}")
+            nil
+          end
         end
+      else
+        logger.info("Frameset not complete. channel: #{frame.channel}, frameset: #{@frames[frame.channel]}")
       end
     end
 
@@ -955,6 +961,7 @@ module AMQP
         # no-op
       else
         if callable = AMQP::HandlersRegistry.find(frame.method_class)
+          logger.info("Found callable: #{callable.inspect} for #{frame.method_class}")
           f = frames.shift
           callable.call(self, f, frames)
         else
@@ -969,6 +976,7 @@ module AMQP
     def clear_frames_on(channel_id)
       raise ArgumentError, "channel id cannot be nil!" if channel_id.nil?
 
+      logger.info("Clearing frameset: #{@frames[channel_id]}") if @frames[channel_id].any?
       @frames[channel_id].clear
     end
 

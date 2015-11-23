@@ -932,7 +932,7 @@ module AMQP
         ensure
           begin
             clear_frames_on(frame.channel) if @frames[frame.channel] # for channel.close, frame.channel will be nil. MK.
-          rescue Exception => ex
+          rescue => ex
             logger.error("Error clearing frameset.\n#{ex.inspect}\n#{ex.backtrace}")
             nil
           end

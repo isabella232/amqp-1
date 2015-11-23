@@ -345,7 +345,7 @@ module AMQP
 
       # Handle the delivery only if the consumer still exists.
       # The broker has been known to deliver a few messages after the consumer has been shut down.
-      AMQP::Session.logger.info("consumer #{consumer.class.to_s}, basic_deliver: #{basic_deliver}, metadata: #{metadata}")
+      AMQP::Session.logger.info("consumer #{consumer.inspect}, basic_deliver: #{basic_deliver.inspect}, metadata: #{metadata.inspect}")
       consumer.handle_delivery(basic_deliver, metadata, payload) if consumer
     end
 

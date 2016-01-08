@@ -52,6 +52,16 @@ describe AMQP do
             done
           end
         end
+
+        it "only registers queue once" do
+          @channel.queue("") do |queue, *args|
+            queues = @channel.instance_variable_get(:@queues)
+            queues.size.should == 1
+            queues[queue.name].should == queue
+            queue.delete
+            done
+          end
+        end
       end
 
 

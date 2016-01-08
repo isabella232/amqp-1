@@ -874,13 +874,13 @@ module AMQP
                 Queue.new(self, name, opts)
               else
                 shim = Proc.new { |q, method|
-          if block.arity == 1
-            block.call(q)
-          else
-            queue = find_queue(method.queue)
-            block.call(queue, method.consumer_count, method.message_count)
-          end
-        }
+                  if block.arity == 1
+                    block.call(q)
+                  else
+                    queue = find_queue(method.queue)
+                    block.call(queue, method.consumer_count, method.message_count)
+                  end
+                }
                 Queue.new(self, name, opts, &shim)
               end
 
@@ -1404,6 +1404,8 @@ module AMQP
     def register_queue(queue)
       raise ArgumentError, "argument is nil!" if queue.nil?
 
+      # Do not allow queue to be registered more than once or auto-recovery will introduce multiple consumers
+      @queues.reject! { |_, q| q.equal?(queue) }
       @queues[queue.name] = queue
     end # register_queue(queue)
 
